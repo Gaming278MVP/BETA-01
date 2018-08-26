@@ -1,0 +1,64 @@
+const Discord = require("discord.js");
+const fs = require('fs'); /* define fs nya lah. -12042 */
+const bot = new Discord.Client({ enableEveryone: true}); // botnya tidak akan bisa mention @everyone
+const config = require("./config.json"); // UDAH GA GUNA SEH
+// const {request} = require("superagent")
+
+// GLOBAL VARIABLE SETTER
+var prefix = 'vdex!'
+
+
+bot.on("ready", async () => {
+  console.log(`${bot.user.username} Sudah online cuk !`);
+
+  function randomstatus() {
+   
+    let status = [`${bot.guilds.size} Guilds is in the party!`, `${bot.users.size.toLocaleString()} users in the party! `, `DETECTOR`, `GLITCH`, `Protected World`, `Protect My Server`,`With my friend`, `Member(s)`, `HanZif#7343`, `Server Discord FC`, `Thanks To CodDev`, `help | b!help`]
+
+    let rstatus = Math.floor(Math.random() * status.length);
+
+    bot.user.setActivity(status[rstatus], {
+      type: "STREAMING"
+    });
+
+  };
+  setInterval(randomstatus, 200)
+
+});
+
+bot.on("message", async message => { //
+  if (message.author.bot) return;
+  if (message.channel.type === "dm") return;
+
+  // MESSAGE CONTENT SPECIFIER
+  // let prefix = config.prefix; // Kenapa harus di config  set sebagai global varaiable kan bisa ?
+  let msg = message.content.toLowerCase();
+  let sender = message.author;
+  let args = message.content.slice(prefix.length).trim().split(/ +/g);
+  let cmd = args.shift().toLowerCase();
+
+  if (!msg.startsWith(prefix)) return; //
+
+  if (message.content.startsWith(prefix)) { ////
+    try {
+      let CommandFile = require(`./cmds/${cmd}.js`);
+      CommandFile.run(bot, message, args);
+    } catch (e) {
+      console.log(e.message)
+    } finally {
+      console.log(`${message.author.tag} tadi menggunakan perintah ${cmd} cuk!`); /* gak terlalu penting, but ok. -12042 */
+    }
+  }
+});
+bot.on("guildMemberAdd", member => {
+console.log("**" + member.user.username + "**, has joined server")
+console.log(member)
+ var role = member.guild.roles.find("name", "-GOOD PEOPLE")
+ member.addRole(role);
+ });
+/* else {
+  return; ini buat apa? diatas else itu harus if. -12042 
+}
+*/ 
+
+bot.login(process.env.SECRET); //

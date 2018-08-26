@@ -1,0 +1,185 @@
+const Discord = require('discord.js');
+const client = new Discord.Client();
+const fs = require('fs');
+const prefix = ".";
+let data = JSON.parse(fs.readFileSync('./data.json', 'utf8'));
+
+String.prototype.capitalize = function() { 
+  return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
+client.on("ready", () => {
+  const user = client.user;
+ const member = client.user;
+  //user.setActivity(".help", "Maaf saya offline dlu because kebelet :v");
+ user.setActivity('Sedang Di koding dlu maaf :: ¤${client.user.id}')
+  user.setStatus("idle");
+  console.log(`${client.user.username} All good!`);
+}); 
+client.on("guildMemberAdd", member => {
+console.log('User ' + member.user.username + 'has joined the server')
+  console.log(member)
+  var role = member.guild.roles.find('name', 'User')
+  member.addRole(role)
+
+//client.guild.channels.get("468188049617059840").send(" **${member.user.username}** joined the server!")
+})
+//client.on('guildMemberRemove', member => {
+//channels.get("468188049617059840").send("**" + member.user.username + "**, left the server!")
+//if (message.guild.channels.find("name","welcome") === null) return message.channel.send(" ${member.user.username} Tolong buat channel yang bernama **welcome**")
+//client.guild.channels.get('468188049617059840').send(' ** ' + member.user.username + '**, has left!')
+
+
+//});
+client.on("message", message => {
+  //if (!message.content.startsWith(prefix)) return;
+  //const args = message.content.slice(prefix.length).trim().split(/ +/g);
+  //let messageArray = 
+  let args = message.content.slice(prefix.length).trim().split(' ')
+  let cmd = args.shift().toLowerCase();
+  //const command = args.shift().toLowerCase();
+  let command = message.content.toLowerCase().split(" ")[0];
+  command = command.slice(prefix.length)
+  const num = /^\d+$/;
+  const duitData = JSON.parse(fs.readFileSync('./data.json'));
+  const date = new Date();
+  switch (command) {
+    case 'ping':
+      message.channel.send("Pong!");
+      break;
+   // case 'botinfo':
+ //     let em = new Dis
+    case 'masuk':
+      if (isNaN(args[0])) return message.channel.send("Bukan angka!");
+      if (message.guild.channels.find("name", "log") === null) return message.channel.send("Tolong **buat text channel dengan nama _log_** untuk melanjutkan.");
+      if (!data) data = {
+        duit: 0
+      }
+      let total = data.duit + Number(args[0]);
+      // if (args[0].match(/\w/g)) return message.channel.send("Bukan angka.");
+      data = {
+        duit: total
+      }
+      message.channel.send(`${args[0]} telah ditambahkan.`);
+      fs.writeFile('./data.json', JSON.stringify(data), (err) => {
+        if (err) console.log(err.stack)
+      });
+      var embed = new Discord.RichEmbed()
+        .setColor(0xAED581)
+        .addField("Penambahan dana sebesar:", (Number(args[0])).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'))
+        .addField("Total uang:", (duitData.duit + Number(args[0])).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'))
+        .setFooter(`Pada tanggal: ${date.getMonth()} / ${date.getDate()} / ${date.getFullYear()}`);
+      message.guild.channels.find("name", "log").send({
+        embed
+      });
+      break;
+    case 'keluar':
+      if (isNaN(args[0])) return message.channel.send("Bukan angka!");
+      if (message.guild.channels.find("name", "log") === null) return message.channel.send("Tolong **buat text channel dengan nama _log_** untuk melanjutkan.");
+      let total_keluar = data.duit - Number(args[0]);
+      // if (args[0].match(/\w/g)) return message.channel.send("Bukan angka.");
+      data = {
+        duit: total_keluar
+      }
+      message.channel.send(`${args[0]} telah dikurangkan.`);
+      fs.writeFile('./data.json', JSON.stringify(data), (err) => {
+        if (err) console.log(err.stack)
+      });
+      var embed = new Discord.RichEmbed()
+        .setColor(0x795548)
+        .addField("Pengurangan dana sebesar:", (Number(args[0])).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'))
+        .addField("Sisa uang:", (duitData.duit - Number(args[0])).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'))
+        .setDescription(args.slice(1).join(" ").capitalize())
+        .setFooter(`Pada tanggal: ${date.getMonth()} / ${date.getDate()} / ${date.getFullYear()}`);
+      message.guild.channels.find("name", "logs").send({
+        embed
+      });
+      break;
+    case 'duit':
+      message.channel.send(`Uang saat ini :: ${(duitData.duit).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}`, {
+        code: "asciidoc"
+      });
+      break;
+    case 'set':
+      data = {
+        duit: Number(args[0])
+      }
+      message.channel.send(`Uang diset ke ${args[0]}.`);
+      fs.writeFile('./data.json', JSON.stringify(data), (err) => {
+        if (err) console.log(err.stack)
+      });
+      break;
+    case 'help':
+      message.channel.send(`= commands =\nmasuk        :: Duit Masuk\nkeluar       :: Duit Keluar/Terpakai\nduit         :: Duit saat ini.\nPenggunaan   :: masuk <berapa_duit_masuk> dan keluar <berapa_duit_keluar>`, {
+        code: "asciidoc"
+      });
+      break;
+    case 'avatar':
+      
+  if (!message.mentions.users.size) { 
+    const embed = new Discord.RichEmbed()
+    .setAuthor("Master -- Avatar", "", message.author.displayAvatarURL)
+    .setColor(0x1a9ca8) 
+    .setFooter(`${message.author.username}\'s avatar`) 
+    .setImage(message.author.displayAvatarURL); 
+    message.channel.send({ embed }); 
+  } else {
+    const mentionMember = message.mentions.users.first(); 
+    const embed = new Discord.RichEmbed() 
+    .setAuthor("Master -- Avatar", "", mentionMember.displayAvatarURL)
+    .setColor(0x1a9ca8) 
+    .setImage(mentionMember.displayAvatarURL) 
+    .setFooter(`${mentionMember.username}\'s avatar`);
+    message.channel.send({ embed });
+  }
+    case 'eval':
+      if (message.author.id !== '426712723108134923' && message.author.id !== '303011486916411392') return message.reply('kamu bukan owner saya! ')
+      try { 
+        let codein = args.join(" "); 
+        let code = eval(codein); 
+        if (typeof code !== 'string') 
+          code = require('util').inspect(code, { depth: 0 }); 
+        let embed = new Discord.RichEmbed() 
+        .setAuthor('Evaluate') 
+        .setColor("RANDOM") 
+        .addField(':inbox_tray: Input', `\`\`\`js\n${codein}\`\`\``) 
+        .addField(':outbox_tray: Output', `\`\`\`js\n${code}\n\`\`\``) 
+        message.channel.send(embed) 
+      } catch(e) { 
+        message.channel.send(`\`\`\`js\n${e}\n\`\`\``); 
+      } 
+                 }
+  
+  
+  
+// hmm
+
+if (message.author.bot) return undefined;
+  if (!message.content.startsWith(prefix)) return undefined;
+  
+  
+  //let message = message.toUpperCase();
+  let sender = message.author;
+  
+  if (!message.content.startsWith(prefix)) return;
+  if (message.author.bot) return;
+  
+  if (message.channel.type == 'dm') return;
+  
+  
+  try {
+  
+  let commandFile = require (`./cmds/${cmd}.js`)
+  commandFile.run(client, message, args)
+  // llah look log nya salah gitu
+  } catch (e) {
+  
+  console.log(e.message)
+  
+  } finally {
+  
+  console.log(" ${message.author.tag} Menggunakan Perintah ${cmd} ") // 
+
+  }
+});
+client.login(process.env.SECRET);
